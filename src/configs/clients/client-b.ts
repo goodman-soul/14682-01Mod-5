@@ -37,10 +37,7 @@ export const config: ClientConfig = {
       'social-feed.title': '社交动态',
     },
   },
-  secretKey: 'sk_test_xyz789uvw456rst123',
   customData: {
-    appSecret: 'secret_app_key_b_98765',
-    clientToken: 'tok_sensitive_data_54321',
     themeMode: 'light',
     supportEmail: 'help@client-b.com',
   },

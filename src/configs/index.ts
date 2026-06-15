@@ -1,35 +1,43 @@
 import { ClientConfig } from './types';
+import { config as rawConfig } from '@client-config';
 
-// 这些导入在生产构建时会被 Vite 的 define 和 tree-shaking 优化
-// 只有当前被选中的客户配置会被最终打包
-import { config as clientA } from './clients/client-a';
-import { config as clientB } from './clients/client-b';
-
-/**
- * 注入全局常量 __CLIENT_ID__
- * 这个常量在 vite.config.ts 中通过 define 定义
- */
 declare const __CLIENT_ID__: string;
 
-const configs: Record<string, ClientConfig> = {
-  'client-a': clientA,
-  'client-b': clientB,
-};
+function loadSecretsFromEnv(baseConfig: ClientConfig): ClientConfig {
+  const env = import.meta.env;
+  const prefix = `VITE_${__CLIENT_ID__.toUpperCase().replace(/-/g, '_')}_`;
 
-// 获取当前客户端配置
-// 在生产构建中，Vite 会根据 __CLIENT_ID__ 进行替换，并剔除未使用的分支
-export const currentConfig: ClientConfig = configs[__CLIENT_ID__] || clientA;
+  const merged: ClientConfig = { ...baseConfig };
 
-/**
- * 功能开关检查器
- */
+  const secretKeyEnv = env[`${prefix}SECRET_KEY`] || env.VITE_SECRET_KEY;
+  if (secretKeyEnv) {
+    merged.secretKey = secretKeyEnv;
+  }
+
+  const customSensitiveKeys = ['API_TOKEN', 'INTEGRATION_KEY', 'APP_SECRET', 'CLIENT_TOKEN'];
+  const customData: Record<string, any> = { ...(merged.customData || {}) };
+
+  for (const key of customSensitiveKeys) {
+    const envKey = `${prefix}${key}`;
+    const camelKey = key.toLowerCase().replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+    if (env[envKey]) {
+      customData[camelKey] = env[envKey];
+    }
+  }
+
+  if (Object.keys(customData).length > 0) {
+    merged.customData = customData;
+  }
+
+  return merged;
+}
+
+export const currentConfig: ClientConfig = loadSecretsFromEnv(rawConfig);
+
 export const isFeatureEnabled = (featureKey: keyof ClientConfig['features']): boolean => {
   return !!currentConfig.features[featureKey];
 };
 
-/**
- * 模块检查器
- */
 export const hasModule = (moduleName: string): boolean => {
   return currentConfig.modules.includes(moduleName);
 };

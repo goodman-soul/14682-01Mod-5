@@ -2,25 +2,36 @@ import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-// https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
-  // 加载当前模式下的环境变量
   const env = loadEnv(mode, process.cwd());
-  const clientId = env.VITE_CLIENT_ID || 'default';
+  const clientId = env.VITE_CLIENT_ID || 'client-a';
 
-  console.log(`Building for client: ${clientId}`);
+  const validClients = ['client-a', 'client-b'];
+  const safeClientId = validClients.includes(clientId) ? clientId : 'client-a';
+
+  console.log(`Building for client: ${safeClientId}`);
+
+  const clientEnv = loadEnv(mode, process.cwd(), `VITE_${safeClientId.toUpperCase().replace(/-/g, '_')}_`);
+
+  const injectedSecrets: Record<string, string> = {};
+  for (const [key, value] of Object.entries(env)) {
+    if (key.startsWith('VITE_SECRET_') || key.startsWith('VITE_CUSTOM_')) {
+      injectedSecrets[`import.meta.env.${key}`] = JSON.stringify(value);
+    }
+  }
 
   return {
     plugins: [react()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
+        '@client-config': path.resolve(__dirname, `./src/configs/clients/${safeClientId}.ts`),
       },
     },
     build: {
-      // 输出到客户专属目录
-      outDir: `dist/${clientId}`,
-      // 这里的逻辑可以进一步优化，比如只包含特定客户的资源
+      outDir: `dist/${safeClientId}`,
+      sourcemap: false,
+      minify: 'esbuild',
       rollupOptions: {
         output: {
           manualChunks: (id) => {
@@ -31,9 +42,9 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    // 通过 define 注入全局常量，用于条件编译
     define: {
-      __CLIENT_ID__: JSON.stringify(clientId),
+      __CLIENT_ID__: JSON.stringify(safeClientId),
+      ...injectedSecrets,
     },
   };
 });

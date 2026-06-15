@@ -37,10 +37,7 @@ export const config: ClientConfig = {
       'reports.title': '报表分析',
     },
   },
-  secretKey: 'sk_live_abc123def456ghi789',
   customData: {
-    apiToken: 'pat_xxxxx_sensitive_token_12345',
-    integrationKey: 'int_key_secret_value_67890',
     themeMode: 'dark',
     supportEmail: 'support@client-a.com',
   },

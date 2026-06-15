@@ -17,7 +17,8 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@client-config": ["src/configs/clients/client-a.ts"]
     }
   },
   "include": ["src"],

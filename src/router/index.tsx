@@ -41,14 +41,12 @@ export const AppRouter: React.FC = () => {
       path: '/login',
       element: (
         <Suspense fallback={<div>Loading Login...</div>}>
-          <Login onLogin={(username, password) => {
-            // 简单的登录逻辑，实际项目中应该调用API
-            console.log('Login attempt:', username, password);
-            localStorage.setItem('isLoggedIn', 'true');
-            localStorage.setItem('username', username);
-            window.location.href = '/';
-          }} />
-        </Suspense>
+            <Login onLogin={(username) => {
+              localStorage.setItem('isLoggedIn', 'true');
+              localStorage.setItem('username', username);
+              window.location.href = '/';
+            }} />
+          </Suspense>
       ),
     },
     {
