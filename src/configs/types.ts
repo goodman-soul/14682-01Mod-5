@@ -20,6 +20,31 @@ export interface ClientConfig {
     logoUrl: string;
     borderRadius: string;
   };
+  // 接口配置
+  api: {
+    baseURL: string;
+    timeout: number;
+    endpoints: {
+      login: string;
+      userProfile: string;
+      dashboard: string;
+      [key: string]: string;
+    };
+  };
+  // 国际化文案配置
+  locale: {
+    lang: string;
+    messages: {
+      'app.title': string;
+      'common.loading': string;
+      'common.error': string;
+      'auth.login': string;
+      'auth.logout': string;
+      [key: string]: string;
+    };
+  };
+  // 客户密钥（敏感信息，报告中需脱敏）
+  secretKey?: string;
   // 自定义配置
   customData?: Record<string, any>;
 }
